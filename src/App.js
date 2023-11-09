@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { db } from "./firebaseConnection";
-import { doc, collection, addDoc, getDoc } from "firebase/firestore";
+import { collection, addDoc, getDocs } from "firebase/firestore";
 
 import "./app.css";
 
 function App() {
   const [title, setTitle] = useState();
   const [author, setAuthor] = useState();
+  const [posts, setPosts] = useState();
 
   async function handleAdd() {
     await addDoc(collection(db, "posts"), { title, author })
@@ -18,16 +19,23 @@ function App() {
       .catch((error) => console.log("GEROU ERRO " + error));
   }
 
-  async function getPost() {
-    const postRef = doc(db, "posts", "12345");
-
-    await getDoc(postRef)
+  async function getPosts() {
+    const postRef = collection(db, "posts");
+    await getDocs(postRef)
       .then((snapshot) => {
-        setAuthor(snapshot.data().author);
-        setTitle(snapshot.data().title);
+        let list = [];
+        snapshot.forEach((doc) => {
+          list.push({
+            id: doc.id,
+            title: doc.data().title,
+            author: doc.data().author,
+          });
+        });
+
+        setPosts(list);
       })
       .catch((error) => {
-        console.log("Erro ao buscar ", error);
+        console.log("Deu algum erro ao buscar os itens da collection");
       });
   }
 
@@ -53,7 +61,19 @@ function App() {
         />
 
         <button onClick={handleAdd}>Cadastrar</button>
-        <button onClick={getPost}>Buscar post</button>
+        <button onClick={getPosts}>Buscar post</button>
+
+        <ul>
+          {posts?.map((post) => (
+            <li key={post.id}>
+              <span>Título: {post.title}</span>
+              <br />
+              <span>Autor: {post.author}</span>
+              <br />
+              <br />
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   );
