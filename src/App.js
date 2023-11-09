@@ -1,13 +1,20 @@
 import { useState } from "react";
 import { db } from "./firebaseConnection";
-import { collection, addDoc, getDocs } from "firebase/firestore";
+import {
+  doc,
+  collection,
+  addDoc,
+  getDocs,
+  updateDoc,
+} from "firebase/firestore";
 
 import "./app.css";
 
 function App() {
-  const [title, setTitle] = useState();
-  const [author, setAuthor] = useState();
-  const [posts, setPosts] = useState();
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+  const [posts, setPosts] = useState("");
+  const [idPost, setIdPost] = useState("");
 
   async function handleAdd() {
     await addDoc(collection(db, "posts"), { title, author })
@@ -39,11 +46,33 @@ function App() {
       });
   }
 
+  async function editPost() {
+    const docRef = doc(db, "posts", idPost);
+    await updateDoc(docRef, { title, author })
+      .then(() => {
+        console.log("Post atualizado com sucesso!");
+        setIdPost("");
+        setTitle("");
+        setAuthor("");
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
+
   return (
     <div>
       <h1>ReactJS + Firebase</h1>
 
       <div className="container">
+        <label>ID do Post:</label>
+        <input
+          placeholder="Digite o ID do post"
+          value={idPost}
+          onChange={(e) => setIdPost(e.target.value)}
+        />
+        <br />
+
         <label>Título:</label>
         <textarea
           type="text"
@@ -62,17 +91,22 @@ function App() {
 
         <button onClick={handleAdd}>Cadastrar</button>
         <button onClick={getPosts}>Buscar post</button>
+        <br />
+        <button onClick={editPost}>Atualizar post</button>
 
         <ul>
-          {posts?.map((post) => (
-            <li key={post.id}>
-              <span>Título: {post.title}</span>
-              <br />
-              <span>Autor: {post.author}</span>
-              <br />
-              <br />
-            </li>
-          ))}
+          {posts.length > 0 &&
+            posts?.map((post) => (
+              <li key={post.id}>
+                <strong>{post.id}</strong>
+                <br />
+                <span>Título: {post.title}</span>
+                <br />
+                <span>Autor: {post.author}</span>
+                <br />
+                <br />
+              </li>
+            ))}
         </ul>
       </div>
     </div>
