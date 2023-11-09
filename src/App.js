@@ -6,6 +6,7 @@ import {
   addDoc,
   getDocs,
   updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 
 import "./app.css";
@@ -60,6 +61,11 @@ function App() {
       });
   }
 
+  async function deletePost(id) {
+    const docRef = doc(db, "posts", id);
+    await deleteDoc(docRef).then(() => alert("Post deletado com sucesso"));
+  }
+
   return (
     <div>
       <h1>ReactJS + Firebase</h1>
@@ -90,7 +96,7 @@ function App() {
         />
 
         <button onClick={handleAdd}>Cadastrar</button>
-        <button onClick={getPosts}>Buscar post</button>
+        <button onClick={getPosts}>Buscar posts</button>
         <br />
         <button onClick={editPost}>Atualizar post</button>
 
@@ -103,6 +109,8 @@ function App() {
                 <span>Título: {post.title}</span>
                 <br />
                 <span>Autor: {post.author}</span>
+                <br />
+                <button onClick={() => deletePost(post.id)}>Excluir</button>
                 <br />
                 <br />
               </li>
